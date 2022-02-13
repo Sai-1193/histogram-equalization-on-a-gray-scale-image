@@ -75,7 +75,7 @@ class Gradient_of_Images:
         obj=Histogram()
         plt.figure(figsize=(18, 14))
         plt.suptitle("Image Gradients Of Gray Scale Image", fontsize=16, fontweight='bold')
-        image = cv2.imread('C:\\Users\\saika\\Downloads\\embark-golden-retriever-puppy.jpg')
+        image = cv2.imread('embark-golden-retriever-puppy.jpg')
         gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         gX = cv2.Sobel(gray_image, ddepth=cv2.CV_32F, dx=1, dy=0, ksize=-1)
         gX = cv2.convertScaleAbs(gX)
