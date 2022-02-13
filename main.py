@@ -91,7 +91,7 @@ class Gradient_of_Images:
         obj.show_Gradientimg_plt(threshB, "Threshold magnitude", 11)
 
 global image
-image = cv2.imread('C:\\Users\\saika\\Downloads\\embark-golden-retriever-puppy.jpg')
+image = cv2.imread('embark-golden-retriever-puppy.jpg')
 obj = Gray_scale_equalization()
 obj.getGrayequalization()
 obj2=Color_scale_equalization()
