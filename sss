@@ -269,3 +269,116 @@ func traverseItems(items []PostmanItem) {
 		traverseItems(item.Item)
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"strings"
+
+	"github.com/robertkrimen/otto"
+)
+
+type PostmanEvent struct {
+	Listen string `json:"listen"`
+	Script struct {
+		Type string   `json:"type"`
+		Exec []string `json:"exec"`
+	} `json:"script"`
+}
+
+type PostmanItem struct {
+	Name  string          `json:"name"`
+	Event []PostmanEvent `json:"event"`
+	Item  []PostmanItem  `json:"item"`
+}
+
+type PostmanCollection struct {
+	Info struct {
+		Name        string `json:"name"`
+		Description string `json:"description"`
+	} `json:"info"`
+	Item []PostmanItem `json:"item"`
+}
+
+func main() {
+	// Read JSON file
+	data, err := ioutil.ReadFile("postman_collection.json")
+	if err != nil {
+		log.Fatalf("Failed to read JSON file: %v", err)
+	}
+
+	// Parse JSON into struct
+	var collection PostmanCollection
+	if err := json.Unmarshal(data, &collection); err != nil {
+		log.Fatalf("Failed to parse JSON: %v", err)
+	}
+
+	// Execute prerequest scripts and obtain authorization token
+	var authorizationToken string
+	for _, item := range collection.Item {
+		authorizationToken = executePrerequest(item)
+		if authorizationToken != "" {
+			break
+		}
+	}
+
+	// Print the obtained authorization token
+	fmt.Println("Authorization Token:", authorizationToken)
+}
+
+func executePrerequest(item PostmanItem) string {
+	var authorizationToken string
+	for _, event := range item.Event {
+		if event.Listen == "prerequest" {
+			// Create a JavaScript VM
+			vm := otto.New()
+
+			// Execute the prerequest script
+			for _, exec := range event.Script.Exec {
+				_, err := vm.Run(exec)
+				if err != nil {
+					log.Printf("Error executing prerequest script: %v\n", err)
+					continue
+				}
+			}
+
+			// Get the authorization token from the JavaScript environment
+			value, _ := vm.Get("authorization_token")
+			if value.IsString() {
+				authorizationToken, _ = value.ToString()
+			}
+		}
+	}
+
+	return authorizationToken
+}
+
