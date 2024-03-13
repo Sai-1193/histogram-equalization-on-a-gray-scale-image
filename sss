@@ -152,3 +152,54 @@ func getVariableValue(key string, variables []VariableDetail) string {
 	log.Fatalf("Variable %s not found", key)
 	return ""
 }
+
+
+
+
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"log"
+)
+
+// Structs to represent the Postman Collection JSON
+type PostmanCollection struct {
+	Item []struct {
+		Event []struct {
+			Listen string `json:"listen"`
+			Script struct {
+				Type string   `json:"type"`
+				Exec []string `json:"exec"`
+			} `json:"script"`
+		} `json:"event"`
+	} `json:"item"`
+}
+
+func main() {
+	// Read the Postman Collection JSON file
+	data, err := ioutil.ReadFile("postman_collection.json")
+	if err != nil {
+		log.Fatalf("Failed to read JSON file: %v", err)
+	}
+
+	// Parse the JSON into the struct
+	var collection PostmanCollection
+	if err := json.Unmarshal(data, &collection); err != nil {
+		log.Fatalf("Failed to parse JSON: %v", err)
+	}
+
+	// Iterate over the items in the collection and extract prerequest scripts
+	for _, item := range collection.Item {
+		for _, event := range item.Event {
+			if event.Listen == "prerequest" {
+				fmt.Println("Prerequest Script:")
+				for _, script := range event.Script.Exec {
+					fmt.Println(script)
+				}
+			}
+		}
+	}
+}
