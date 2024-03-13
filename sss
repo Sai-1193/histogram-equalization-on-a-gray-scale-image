@@ -203,3 +203,69 @@ func main() {
 		}
 	}
 }
+
+
+
+
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"log"
+)
+
+type PostmanEvent struct {
+	Listen string `json:"listen"`
+	Script struct {
+		Type string   `json:"type"`
+		Exec []string `json:"exec"`
+	} `json:"script"`
+}
+
+type PostmanItem struct {
+	Name  string          `json:"name"`
+	Event []PostmanEvent `json:"event"`
+	Item  []PostmanItem  `json:"item"`
+}
+
+type PostmanCollection struct {
+	Info struct {
+		Name        string `json:"name"`
+		Description string `json:"description"`
+	} `json:"info"`
+	Item []PostmanItem `json:"item"`
+}
+
+func main() {
+	// Read JSON file
+	data, err := ioutil.ReadFile("postman_collection.json")
+	if err != nil {
+		log.Fatalf("Failed to read JSON file: %v", err)
+	}
+
+	// Parse JSON into struct
+	var collection PostmanCollection
+	if err := json.Unmarshal(data, &collection); err != nil {
+		log.Fatalf("Failed to parse JSON: %v", err)
+	}
+
+	// Traverse the collection items and print prerequest scripts
+	traverseItems(collection.Item)
+}
+
+func traverseItems(items []PostmanItem) {
+	for _, item := range items {
+		for _, event := range item.Event {
+			if event.Listen == "prerequest" {
+				fmt.Println("Prerequest Script for", item.Name+":")
+				for _, exec := range event.Script.Exec {
+					fmt.Println(exec)
+				}
+				fmt.Println()
+			}
+		}
+		traverseItems(item.Item)
+	}
+}
