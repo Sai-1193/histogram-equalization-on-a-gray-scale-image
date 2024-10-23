@@ -1,0 +1,98 @@
+
+
+import React, { useState, useEffect } from 'react';
+import { YAML } from 'react-yaml'; // Ensure you have a YAML library installed
+
+interface Service {
+  serviceName: string;
+  tests: Test[];
+}
+
+interface Test {
+  testName: string;
+  api: string;
+  method: string;
+}
+
+interface FormState {
+  car_id: number;
+  application_name: string;
+  services: Service[];
+}
+
+const CreateForm: React.FC = () => {
+  const [carId, setCarId] = useState<number>(0);
+  const [applicationName, setApplicationName] = useState<string>('');
+  const [services, setServices] = useState<Service[]>([]);
+  const [expandedServiceIndex, setExpandedServiceIndex] = useState<number | null>(null);
+
+  const handleAddService = () => {
+    const newService: Service = { serviceName: '', tests: [] };
+    setServices((prev) => [...prev, newService]);
+  };
+
+  const handleDeleteService = (index: number) => {
+    const updatedServices = services.filter((_, i) => i !== index);
+    setServices(updatedServices);
+  };
+
+  const handleServiceChange = (index: number, value: string) => {
+    const updatedServices = [...services];
+    updatedServices[index].serviceName = value;
+    setServices(updatedServices);
+  };
+
+  const toggleServiceCollapse = (index: number) => {
+    setExpandedServiceIndex(expandedServiceIndex === index ? null : index);
+  };
+
+  const formData: FormState = {
+    car_id: carId,
+    application_name: applicationName,
+    services,
+  };
+
+  return (
+    <div style={{ display: 'flex' }}>
+      <div style={{ flex: 1, padding: '20px' }}>
+        <h2>Create Application</h2>
+        <div>
+          <label>Car ID:</label>
+          <input type="number" value={carId} onChange={(e) => setCarId(Number(e.target.value))} />
+        </div>
+        <div>
+          <label>Application Name:</label>
+          <input type="text" value={applicationName} onChange={(e) => setApplicationName(e.target.value)} />
+        </div>
+
+        <h3>Services</h3>
+        {services.map((service, index) => (
+          <div key={index} style={{ border: '1px solid #ccc', marginBottom: '10px', padding: '10px' }}>
+            <div onClick={() => toggleServiceCollapse(index)} style={{ cursor: 'pointer' }}>
+              <strong>{service.serviceName || 'New Service'}</strong>
+            </div>
+            {expandedServiceIndex === index && (
+              <div>
+                <input
+                  type="text"
+                  placeholder="Service Name"
+                  value={service.serviceName}
+                  onChange={(e) => handleServiceChange(index, e.target.value)}
+                />
+                <button type="button" onClick={() => handleDeleteService(index)}>Delete Service</button>
+              </div>
+            )}
+          </div>
+        ))}
+        <button type="button" onClick={handleAddService}>Add Service</button>
+      </div>
+
+      <div style={{ flex: 1, padding: '20px', borderLeft: '1px solid #ccc' }}>
+        <h2>YAML View</h2>
+        <pre>{YAML.stringify(formData)}</pre>
+      </div>
+    </div>
+  );
+};
+
+export default CreateForm;
