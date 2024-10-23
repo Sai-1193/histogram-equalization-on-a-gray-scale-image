@@ -1,0 +1,297 @@
+import React, { useState } from 'react';
+
+interface Service {
+  serviceName: string;
+  tests: Test[];
+}
+
+interface Test {
+  testName: string;
+  api: string;
+  method: string;
+}
+
+interface FormState {
+  car_id: number;
+  application_name: string;
+  services: Service[];
+}
+
+const CreateForm: React.FC<{ onChange: (data: FormState) => void }> = ({ onChange }) => {
+  const [carId, setCarId] = useState<number>(0);
+  const [applicationName, setApplicationName] = useState<string>('');
+  const [services, setServices] = useState<Service[]>([]);
+  
+  const handleAddService = () => {
+    const newService: Service = { serviceName: '', tests: [] };
+    setServices((prev) => [...prev, newService]);
+  };
+
+  const handleDeleteService = (index: number) => {
+    const updatedServices = services.filter((_, i) => i !== index);
+    setServices(updatedServices);
+    onChange({ car_id: carId, application_name: applicationName, services: updatedServices });
+  };
+
+  const handleServiceChange = (index: number, value: string) => {
+    const updatedServices = [...services];
+    updatedServices[index].serviceName = value;
+    setServices(updatedServices);
+    onChange({ car_id: carId, application_name: applicationName, services: updatedServices });
+  };
+
+  const [expandedServiceIndex, setExpandedServiceIndex] = useState<number | null>(null);
+
+  const toggleServiceCollapse = (index: number) => {
+    setExpandedServiceIndex(expandedServiceIndex === index ? null : index);
+  };
+
+  return (
+    <div>
+      <h2>Create Application</h2>
+      <div>
+        <label>Car ID:</label>
+        <input type="number" value={carId} onChange={(e) => setCarId(Number(e.target.value))} />
+      </div>
+      <div>
+        <label>Application Name:</label>
+        <input type="text" value={applicationName} onChange={(e) => setApplicationName(e.target.value)} />
+      </div>
+
+      <h3>Services</h3>
+      {services.map((service, index) => (
+        <div key={index} style={{ border: '1px solid #ccc', marginBottom: '10px', padding: '10px' }}>
+          <div onClick={() => toggleServiceCollapse(index)} style={{ cursor: 'pointer' }}>
+            <strong>{service.serviceName || 'New Service'}</strong>
+          </div>
+          {expandedServiceIndex === index && (
+            <div>
+              <input
+                type="text"
+                placeholder="Service Name"
+                value={service.serviceName}
+                onChange={(e) => handleServiceChange(index, e.target.value)}
+              />
+              <button type="button" onClick={() => handleDeleteService(index)}>Delete Service</button>
+              <h4>Tests</h4>
+              {service.tests.map((test, testIndex) => (
+                <div key={testIndex}>
+                  <input
+                    type="text"
+                    placeholder="Test Name"
+                    value={test.testName}
+                    onChange={(e) => {/* handle test changes */}}
+                  />
+                  <input
+                    type="text"
+                    placeholder="API"
+                    value={test.api}
+                    onChange={(e) => {/* handle test changes */}}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Method"
+                    value={test.method}
+                    onChange={(e) => {/* handle test changes */}}
+                  />
+                  <button type="button" onClick={() => {/* handle delete test */}}>Delete Test</button>
+                </div>
+              ))}
+              <button type="button" onClick={() => {/* handle add test */}}>Add Test</button>
+            </div>
+          )}
+        </div>
+      ))}
+      <button type="button" onClick={handleAddService}>Add Service</button>
+    </div>
+  );
+};
+
+export default CreateForm;
+
+
+
+
+
+import React, { useEffect, useState } from 'react';
+import TestModal from './TestModal';
+
+interface Service {
+  serviceName: string;
+  tests: Test[];
+}
+
+interface Test {
+  testName: string;
+  api: string;
+  method: string;
+}
+
+interface FormState {
+  car_id: number;
+  application_name: string;
+  services: Service[];
+}
+
+const CreateForm: React.FC<{ onChange: (data: FormState) => void }> = ({ onChange }) => {
+  const [carId, setCarId] = useState<number>(0);
+  const [applicationName, setApplicationName] = useState<string>('');
+  const [services, setServices] = useState<Service[]>([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [currentServiceIndex, setCurrentServiceIndex] = useState<number | null>(null);
+  const [currentTestIndex, setCurrentTestIndex] = useState<number | null>(null);
+
+  const fetchData = async () => {
+    // Fetch data logic remains the same...
+  };
+
+  useEffect(() => {
+    fetchData(); // Fetch data when component mounts
+  }, []);
+
+  const handleAddService = () => {
+    const newService: Service = { serviceName: '', tests: [] };
+    setServices((prev) => [...prev, newService]);
+  };
+
+  const handleDeleteService = (index: number) => {
+    const updatedServices = services.filter((_, i) => i !== index);
+    setServices(updatedServices);
+    onChange({ car_id: carId, application_name: applicationName, services: updatedServices });
+  };
+
+  const handleServiceChange = (index: number, value: string) => {
+    const updatedServices = [...services];
+    updatedServices[index].serviceName = value;
+    setServices(updatedServices);
+    onChange({ car_id: carId, application_name: applicationName, services: updatedServices });
+  };
+
+  const handleAddTest = (serviceIndex: number) => {
+    setCurrentServiceIndex(serviceIndex);
+    setCurrentTestIndex(null);
+    setModalOpen(true);
+  };
+
+  const handleEditTest = (serviceIndex: number, testIndex: number) => {
+    setCurrentServiceIndex(serviceIndex);
+    setCurrentTestIndex(testIndex);
+    setModalOpen(true);
+  };
+
+  const handleSaveTest = (test: Test) => {
+    const updatedServices = [...services];
+    if (currentTestIndex !== null) {
+      updatedServices[currentServiceIndex!].tests[currentTestIndex!] = test; // Update existing test
+    } else {
+      updatedServices[currentServiceIndex!].tests.push(test); // Add new test
+    }
+    setServices(updatedServices);
+    onChange({ car_id: carId, application_name: applicationName, services: updatedServices });
+    handleCloseModal();
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setCurrentServiceIndex(null);
+    setCurrentTestIndex(null);
+  };
+
+  const handleDeleteTest = (serviceIndex: number, testIndex: number) => {
+    const updatedServices = [...services];
+    updatedServices[serviceIndex].tests = updatedServices[serviceIndex].tests.filter((_, i) => i !== testIndex);
+    setServices(updatedServices);
+    onChange({ car_id: carId, application_name: applicationName, services: updatedServices });
+  };
+
+  return (
+    <div>
+      <h2>Create Application</h2>
+      <div>
+        <label>Car ID:</label>
+        <input type="number" value={carId} onChange={(e) => setCarId(Number(e.target.value))} />
+      </div>
+      <div>
+        <label>Application Name:</label>
+        <input type="text" value={applicationName} onChange={(e) => setApplicationName(e.target.value)} />
+      </div>
+
+      <h3>Services</h3>
+      {services.map((service, serviceIndex) => (
+        <div key={serviceIndex}>
+          <input
+            type="text"
+            placeholder="Service Name"
+            value={service.serviceName}
+            onChange={(e) => handleServiceChange(serviceIndex, e.target.value)}
+          />
+          <button type="button" onClick={() => handleDeleteService(serviceIndex)}>Delete Service</button>
+
+          <h4>Tests</h4>
+          {service.tests.map((test, testIndex) => (
+            <div key={testIndex}>
+              <input
+                type="text"
+                placeholder="Test Name"
+                value={test.testName}
+                onChange={(e) => handleTestChange(serviceIndex, testIndex, 'testName', e.target.value)}
+              />
+              <input
+                type="text"
+                placeholder="API"
+                value={test.api}
+                onChange={(e) => handleTestChange(serviceIndex, testIndex, 'api', e.target.value)}
+              />
+              <input
+                type="text"
+                placeholder="Method"
+                value={test.method}
+                onChange={(e) => handleTestChange(serviceIndex, testIndex, 'method', e.target.value)}
+              />
+              <button type="button" onClick={() => handleEditTest(serviceIndex, testIndex)}>Edit Test</button>
+              <button type="button" onClick={() => handleDeleteTest(serviceIndex, testIndex)}>Delete Test</button>
+            </div>
+          ))}
+          <button type="button" onClick={() => handleAddTest(serviceIndex)}>Add Test</button>
+        </div>
+      ))}
+      <button type="button" onClick={handleAddService}>Add Service</button>
+
+      <TestModal
+        isOpen={modalOpen}
+        onClose={handleCloseModal}
+        onSave={handleSaveTest}
+        test={currentTestIndex !== null ? services[currentServiceIndex!].tests[currentTestIndex!] : undefined}
+      />
+    </div>
+  );
+};
+
+export default CreateForm;
+
+
+// Inside TestModal
+const TestModal: React.FC<{ isOpen: boolean; onClose: () => void; onSave: (test: Test) => void; test?: Test }> = ({ isOpen, onClose, onSave, test }) => {
+  const [testName, setTestName] = useState(test?.testName || '');
+  const [api, setApi] = useState(test?.api || '');
+  const [method, setMethod] = useState(test?.method || '');
+
+  const handleSubmit = () => {
+    onSave({ testName, api, method });
+  };
+
+  useEffect(() => {
+    if (test) {
+      setTestName(test.testName);
+      setApi(test.api);
+      setMethod(test.method);
+    } else {
+      setTestName('');
+      setApi('');
+      setMethod('');
+    }
+  }, [test]);
+
+  // Render modal UI and handle open/close logic...
+};
+
