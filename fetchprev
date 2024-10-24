@@ -1,0 +1,77 @@
+import React, { useState } from 'react';
+import FetchPreviousButton from './FetchPreviousButton';
+
+interface Service {
+  serviceName: string;
+  tests: Test[];
+}
+
+interface Test {
+  testName: string;
+  api: string;
+  method: string;
+}
+
+interface FormState {
+  car_id: number;
+  application_name: string;
+  services: Service[];
+}
+
+const CreateForm: React.FC = () => {
+  const [carId, setCarId] = useState<number>(0);
+  const [applicationName, setApplicationName] = useState<string>('');
+  const [services, setServices] = useState<Service[]>([]);
+
+  const handleFetchData = async () => {
+    // Fetch data from your API
+    const response = await fetch('/api/form-data'); // Replace with your actual endpoint
+    const data: FormState = await response.json();
+    
+    // Update state with fetched data
+    setCarId(data.car_id);
+    setApplicationName(data.application_name);
+    setServices(data.services);
+  };
+
+  return (
+    <div>
+      <h2>Create Application</h2>
+      <FetchPreviousButton onFetch={handleFetchData} />
+      <div>
+        <label>Car ID:</label>
+        <input type="number" value={carId} onChange={(e) => setCarId(Number(e.target.value))} />
+      </div>
+      <div>
+        <label>Application Name:</label>
+        <input type="text" value={applicationName} onChange={(e) => setApplicationName(e.target.value)} />
+      </div>
+      {/* Render services and tests as needed */}
+    </div>
+  );
+};
+
+export default CreateForm;
+
+
+
+
+
+import React from 'react';
+
+interface FetchPreviousButtonProps {
+  onFetch: () => void; // Callback function to fetch data
+}
+
+const FetchPreviousButton: React.FC<FetchPreviousButtonProps> = ({ onFetch }) => {
+  return (
+    <button type="button" onClick={onFetch}>
+      Fetch Previous Data
+    </button>
+  );
+};
+
+export default FetchPreviousButton;
+
+
+
