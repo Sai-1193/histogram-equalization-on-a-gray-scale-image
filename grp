@@ -1,0 +1,79 @@
+interface Application {
+  id: number;
+  name: string;
+}
+
+interface Group {
+  id: number;
+  name: string;
+  applications: Application[];
+}
+
+const groups: Group[] = [
+  {
+    id: 1,
+    name: 'Group 1',
+    applications: [
+      { id: 1, name: 'App 1.1' },
+      { id: 2, name: 'App 1.2' },
+    ],
+  },
+  {
+    id: 2,
+    name: 'Group 2',
+    applications: [
+      { id: 3, name: 'App 2.1' },
+      { id: 4, name: 'App 2.2' },
+    ],
+  },
+  {
+    id: 3,
+    name: 'Group 3',
+    applications: [
+      { id: 5, name: 'App 3.1' },
+      { id: 6, name: 'App 3.2' },
+    ],
+  },
+];
+
+
+interface User {
+  id: number;
+  name: string;
+  groupId: number; // Group the user belongs to
+}
+
+const currentUser: User = {
+  id: 1,
+  name: 'John Doe',
+  groupId: 1, // Example group ID
+};
+
+
+import React from 'react';
+
+const UserApplications: React.FC = () => {
+  const userGroup = groups.find(group => group.id === currentUser.groupId);
+
+  return (
+    <div>
+      <h1>Applications for {currentUser.name}</h1>
+      {userGroup ? (
+        <div>
+          <h2>{userGroup.name}</h2>
+          <ul>
+            {userGroup.applications.map(app => (
+              <li key={app.id}>{app.name}</li>
+            ))}
+          </ul>
+          {/* You can add more components related to the group here */}
+        </div>
+      ) : (
+        <p>No applications available for your group.</p>
+      )}
+    </div>
+  );
+};
+
+export default UserApplications;
+
