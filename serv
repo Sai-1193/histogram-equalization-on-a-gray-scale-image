@@ -220,3 +220,106 @@ const ServiceForm: React.FC = () => {
 
 export default ServiceForm;
 
+
+
+
+
+
+import React, { useState } from 'react';
+
+interface PreReqBodyVar {
+  key?: string[];  // The key field is an array of strings
+}
+
+const ServiceForm: React.FC = () => {
+  const [preReqBodyVars, setPreReqBodyVars] = useState<PreReqBodyVar[]>([]);  // List of preReqBodyVars
+  const [keyInput, setKeyInput] = useState<string>(''); // Input field for the key value
+  const [editingIndex, setEditingIndex] = useState<number | null>(null); // Index of the item being edited
+  const [open, setOpen] = useState<boolean>(false); // Whether the input field is visible
+
+  // Show the input field for adding a new key
+  const addService = () => {
+    setOpen(true); // Show the input field
+    setKeyInput(''); // Reset the input field
+    setEditingIndex(null); // Clear any editing state
+  };
+
+  // Handle submitting the key (either adding or updating)
+  const handleSubmit = () => {
+    if (keyInput.trim() !== '') {
+      const newKey = keyInput.split(',').map((item) => item.trim()); // Convert input to array
+
+      if (editingIndex !== null) {
+        // Editing an existing item
+        const updatedPreReqBodyVars = [...preReqBodyVars];
+        updatedPreReqBodyVars[editingIndex] = { key: newKey };
+        setPreReqBodyVars(updatedPreReqBodyVars);
+      } else {
+        // Adding a new item
+        setPreReqBodyVars((prev) => [...prev, { key: newKey }]);
+      }
+
+      // Close the input field and reset the form
+      setOpen(false);
+      setKeyInput('');
+      setEditingIndex(null); // Reset the editing state
+    }
+  };
+
+  // Start editing an existing item
+  const handleEdit = (index: number) => {
+    const serviceToEdit = preReqBodyVars[index];
+    if (serviceToEdit.key) {
+      setKeyInput(serviceToEdit.key.join(', ')); // Pre-fill the input with the current key
+      setEditingIndex(index); // Set the index of the item being edited
+      setOpen(true); // Show the input field to edit
+    }
+  };
+
+  // Handle deleting an item
+  const handleDelete = (index: number) => {
+    setPreReqBodyVars(preReqBodyVars.filter((_, i) => i !== index));
+  };
+
+  return (
+    <div>
+      {/* Show input field to add or edit key */}
+      {open && (
+        <div>
+          <input
+            type="text"
+            placeholder="Enter key values (comma separated)"
+            value={keyInput}
+            onChange={(e) => setKeyInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleSubmit();
+            }}
+          />
+          <button onClick={handleSubmit}>Submit</button>
+          <button onClick={() => setOpen(false)}>Cancel</button>
+        </div>
+      )}
+
+      {/* PreReqBodyVar List */}
+      <ul>
+        {preReqBodyVars.map((preReqBodyVar, index) => (
+          <li key={index}>
+            <strong>Key:</strong> {preReqBodyVar.key?.join(', ')}
+            <br />
+            {/* Show Edit and Delete buttons */}
+            <button onClick={() => handleEdit(index)}>Edit</button>
+            <button onClick={() => handleDelete(index)}>Delete</button>
+          </li>
+        ))}
+      </ul>
+
+      {/* Add New Service Button */}
+      <button onClick={addService}>Add Service</button>
+    </div>
+  );
+};
+
+export default ServiceForm;
+
+
+
