@@ -1,0 +1,101 @@
+import React, { useState } from 'react';
+
+// Types for the service and test
+interface Test {
+  testName: string;
+}
+
+interface Service {
+  serviceName: string;
+  tests: Test[];
+}
+
+const ServiceForm: React.FC = () => {
+  const [services, setServices] = useState<Service[]>([]);
+  const [serviceName, setServiceName] = useState<string>('');
+  const [tests, setTests] = useState<string>(''); // Comma-separated tests
+  const [editingService, setEditingService] = useState<Service | null>(null);
+
+  // Handle the Add or Update action when Enter is pressed
+  const handleEnterPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSubmit();
+    }
+  };
+
+  // Add or Edit Service
+  const handleSubmit = () => {
+    if (editingService) {
+      // Update existing service
+      setServices(services.map(service =>
+        service.serviceName === editingService.serviceName
+          ? { ...service, serviceName, tests: [{ testName: tests }] }
+          : service
+      ));
+      setEditingService(null); // Reset editing mode
+    } else {
+      // Add new service
+      setServices([...services, { serviceName, tests: [{ testName: tests }] }]);
+    }
+    // Clear the form fields after adding/updating
+    setServiceName('');
+    setTests('');
+  };
+
+  // Start editing an existing service
+  const handleEdit = (service: Service) => {
+    setEditingService(service); // Set the service to edit
+    setServiceName(service.serviceName); // Pre-fill service name
+    setTests(service.tests.map(test => test.testName).join(', ')); // Pre-fill tests (comma-separated)
+  };
+
+  // Delete a service
+  const handleDelete = (serviceName: string) => {
+    setServices(services.filter(service => service.serviceName !== serviceName));
+  };
+
+  return (
+    <div>
+      {/* Add/Edit service form */}
+      <div>
+        <input
+          type="text"
+          placeholder="Enter service name"
+          value={serviceName}
+          onChange={(e) => setServiceName(e.target.value)}
+          onKeyDown={handleEnterPress}  // Handle Enter key press for adding/updating
+        />
+        <input
+          type="text"
+          placeholder="Enter tests (comma separated)"
+          value={tests}
+          onChange={(e) => setTests(e.target.value)}
+          onKeyDown={handleEnterPress}  // Handle Enter key press for adding/updating
+        />
+      </div>
+
+      {/* Service List */}
+      <ul>
+        {services.map((service, index) => (
+          <li key={index}>
+            <strong>{service.serviceName}</strong>
+            <ul>
+              {service.tests.map((test, i) => (
+                <li key={i}>{test.testName}</li>
+              ))}
+            </ul>
+            <button onClick={() => handleEdit(service)}>Edit</button>
+            <button onClick={() => handleDelete(service.serviceName)}>Delete</button>
+          </li>
+        ))}
+      </ul>
+
+      {/* Add Service button resets the form */}
+      <button onClick={() => setEditingService(null)}>
+        Add Service
+      </button>
+    </div>
+  );
+};
+
+export default ServiceForm;
