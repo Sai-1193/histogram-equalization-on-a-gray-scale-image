@@ -322,4 +322,123 @@ const ServiceForm: React.FC = () => {
 export default ServiceForm;
 
 
+import React, { useState } from 'react';
+
+interface BodyVar {
+  path: string;
+  type?: string;
+  values?: string[];
+}
+
+const BodyVarForm: React.FC = () => {
+  const [bodyVars, setBodyVars] = useState<BodyVar[]>([]); // List of BodyVar objects
+  const [pathInput, setPathInput] = useState<string>(''); // Input field for the path
+  const [typeInput, setTypeInput] = useState<string>(''); // Input field for the type (optional)
+  const [valuesInput, setValuesInput] = useState<string>(''); // Input field for the values (comma separated)
+  const [editingPath, setEditingPath] = useState<string | null>(null); // To track the path of the BodyVar being edited
+  const [open, setOpen] = useState<boolean>(false); // To control if the form is open
+
+  // Show the input fields for adding a new BodyVar
+  const addService = () => {
+    setOpen(true); // Show the input fields
+    setPathInput(''); // Reset the path input
+    setTypeInput(''); // Reset the type input
+    setValuesInput(''); // Reset the values input
+    setEditingPath(null); // Clear any editing state
+  };
+
+  // Handle submitting the BodyVar (either adding or updating)
+  const handleSubmit = () => {
+    if (pathInput.trim() !== '') {
+      const newBodyVar: BodyVar = {
+        path: pathInput,
+        type: typeInput || undefined, // Type is optional, only include if provided
+        values: valuesInput ? valuesInput.split(',').map((item) => item.trim()) : undefined, // Values are optional, split by comma
+      };
+
+      if (editingPath) {
+        // Editing an existing item
+        const updatedBodyVars = bodyVars.map((bodyVar) =>
+          bodyVar.path === editingPath ? newBodyVar : bodyVar
+        );
+        setBodyVars(updatedBodyVars);
+      } else {
+        // Adding a new item
+        setBodyVars((prev) => [...prev, newBodyVar]);
+      }
+
+      // Close the input fields and reset the form
+      setOpen(false);
+      setPathInput('');
+      setTypeInput('');
+      setValuesInput('');
+      setEditingPath(null); // Reset the editing state
+    }
+  };
+
+  // Start editing an existing BodyVar based on path
+  const handleEdit = (path: string) => {
+    const bodyVarToEdit = bodyVars.find((bodyVar) => bodyVar.path === path);
+    if (bodyVarToEdit) {
+      setPathInput(bodyVarToEdit.path);
+      setTypeInput(bodyVarToEdit.type || ''); // Pre-fill the type if available
+      setValuesInput(bodyVarToEdit.values ? bodyVarToEdit.values.join(', ') : ''); // Pre-fill values if available
+      setEditingPath(path); // Set the path of the item being edited
+      setOpen(true); // Show the input fields to allow editing
+    }
+  };
+
+  // Handle deleting a BodyVar
+  const handleDelete = (path: string) => {
+    setBodyVars(bodyVars.filter((bodyVar) => bodyVar.path !== path));
+  };
+
+  return (
+    <div>
+      {/* Show input fields for adding or editing a BodyVar */}
+      {open && (
+        <div>
+          <input
+            type="text"
+            placeholder="Enter path"
+            value={pathInput}
+            onChange={(e) => setPathInput(e.target.value)}
+          />
+          <input
+            type="text"
+            placeholder="Enter type (optional)"
+            value={typeInput}
+            onChange={(e) => setTypeInput(e.target.value)}
+          />
+          <input
+            type="text"
+            placeholder="Enter values (comma separated)"
+            value={valuesInput}
+            onChange={(e) => setValuesInput(e.target.value)}
+          />
+          <button onClick={handleSubmit}>Submit</button>
+          <button onClick={() => setOpen(false)}>Cancel</button>
+        </div>
+      )}
+
+      {/* BodyVar List - Only show Path with Edit and Delete buttons */}
+      <ul>
+        {bodyVars.map((bodyVar, index) => (
+          <li key={index}>
+            <strong>{bodyVar.path}</strong>
+            <br />
+            {/* Show Edit and Delete buttons */}
+            <button onClick={() => handleEdit(bodyVar.path)}>Edit</button>
+            <button onClick={() => handleDelete(bodyVar.path)}>Delete</button>
+          </li>
+        ))}
+      </ul>
+
+      {/* Add New BodyVar Button */}
+      <button onClick={addService}>Add BodyVar</button>
+    </div>
+  );
+};
+
+export default BodyVarForm;
 
