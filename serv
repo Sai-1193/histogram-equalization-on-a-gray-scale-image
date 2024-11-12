@@ -101,3 +101,122 @@ const ServiceForm: React.FC = () => {
 };
 
 export default ServiceForm;
+
+
+
+
+import React, { useState } from 'react';
+
+// Types for the service and test
+interface Test {
+  testName: string;
+}
+
+interface Service {
+  serviceName: string;
+  tests: Test[];
+}
+
+const ServiceForm: React.FC = () => {
+  const [services, setServices] = useState<Service[]>([]);  // List of services
+  const [serviceName, setServiceName] = useState<string>(''); // Service name input
+  const [tests, setTests] = useState<string>(''); // Comma-separated tests input
+  const [editingService, setEditingService] = useState<Service | null>(null); // To track which service is being edited
+  const [open, setOpen] = useState<boolean>(false); // To control if the form is open
+
+  // Function to handle adding a new service
+  const addService = () => {
+    setOpen(true); // Open the form
+    setEditingService(null); // Clear editing mode
+  };
+
+  // Add or Edit Service
+  const handleSubmit = () => {
+    if (serviceName.trim() !== '') {
+      const newService: Service = { 
+        serviceName, 
+        tests: [{ testName: tests }] // Adjust this if you want to handle multiple tests
+      };
+
+      setServices((prev) => {
+        if (editingService) {
+          // If editing an existing service, update it
+          return prev.map((service) =>
+            service.serviceName === editingService.serviceName
+              ? { ...service, serviceName, tests: [{ testName: tests }] }
+              : service
+          );
+        } else {
+          // Add a new service
+          return [...prev, newService];
+        }
+      });
+
+      setOpen(false); // Close the form after submission
+      setServiceName(''); // Reset the service name
+      setTests(''); // Reset tests field
+      setEditingService(null); // Reset editing state
+    }
+  };
+
+  // Start editing an existing service
+  const handleEdit = (service: Service) => {
+    setEditingService(service); // Set the service to edit
+    setServiceName(service.serviceName); // Pre-fill service name
+    setTests(service.tests.map(test => test.testName).join(', ')); // Pre-fill tests (comma-separated)
+    setOpen(true); // Open the form to allow editing
+  };
+
+  // Delete a service
+  const handleDelete = (serviceName: string) => {
+    setServices(services.filter((service) => service.serviceName !== serviceName));
+  };
+
+  return (
+    <div>
+      {/* Show form for adding or editing a service */}
+      {open && (
+        <div>
+          <input
+            type="text"
+            placeholder="Enter service name"
+            value={serviceName}
+            onChange={(e) => setServiceName(e.target.value)}
+          />
+          <input
+            type="text"
+            placeholder="Enter tests (comma separated)"
+            value={tests}
+            onChange={(e) => setTests(e.target.value)}
+          />
+          <button onClick={handleSubmit}>Submit</button>
+          <button onClick={() => setOpen(false)}>Cancel</button>
+        </div>
+      )}
+
+      {/* Service List */}
+      <ul>
+        {services.map((service, index) => (
+          <li key={index}>
+            <strong>{service.serviceName}</strong>
+            <ul>
+              {service.tests.map((test, i) => (
+                <li key={i}>{test.testName}</li>
+              ))}
+            </ul>
+
+            {/* Show Edit and Delete buttons only for added services */}
+            <button onClick={() => handleEdit(service)}>Edit</button>
+            <button onClick={() => handleDelete(service.serviceName)}>Delete</button>
+          </li>
+        ))}
+      </ul>
+
+      {/* Add Service button */}
+      <button onClick={addService}>Add Service</button>
+    </div>
+  );
+};
+
+export default ServiceForm;
+
