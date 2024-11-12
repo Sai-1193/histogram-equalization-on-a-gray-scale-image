@@ -84,6 +84,8 @@ const ServiceForm: React.FC = () => {
                 <li key={i}>{test.testName}</li>
               ))}
             </ul>
+
+            {/* Only show Edit and Delete buttons if the service is in the list */}
             <button onClick={() => handleEdit(service)}>Edit</button>
             <button onClick={() => handleDelete(service.serviceName)}>Delete</button>
           </li>
