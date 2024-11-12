@@ -12,13 +12,13 @@ interface Service {
 
 const ServiceForm: React.FC = () => {
   const [services, setServices] = useState<Service[]>([]);
-  const [serviceName, setServiceName] = useState<string>('');
+  const [serviceName, setServiceName] = useState<string>(''); // Service name input
   const [tests, setTests] = useState<string>(''); // Comma-separated tests
   const [editingService, setEditingService] = useState<Service | null>(null);
 
   // Handle the Add or Update action when Enter is pressed
   const handleEnterPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && serviceName.trim() !== '') {
       handleSubmit();
     }
   };
@@ -56,21 +56,21 @@ const ServiceForm: React.FC = () => {
 
   return (
     <div>
-      {/* Add/Edit service form */}
+      {/* Only show service name input when adding a new service */}
       <div>
         <input
           type="text"
           placeholder="Enter service name"
           value={serviceName}
           onChange={(e) => setServiceName(e.target.value)}
-          onKeyDown={handleEnterPress}  // Handle Enter key press for adding/updating
+          onKeyDown={handleEnterPress} // Handle Enter key press for adding/updating
         />
         <input
           type="text"
           placeholder="Enter tests (comma separated)"
           value={tests}
           onChange={(e) => setTests(e.target.value)}
-          onKeyDown={handleEnterPress}  // Handle Enter key press for adding/updating
+          onKeyDown={handleEnterPress} // Handle Enter key press for adding/updating
         />
       </div>
 
@@ -85,7 +85,7 @@ const ServiceForm: React.FC = () => {
               ))}
             </ul>
 
-            {/* Only show Edit and Delete buttons if the service is in the list */}
+            {/* Show Edit and Delete buttons only for added services */}
             <button onClick={() => handleEdit(service)}>Edit</button>
             <button onClick={() => handleDelete(service.serviceName)}>Delete</button>
           </li>
