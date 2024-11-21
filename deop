@@ -1,0 +1,116 @@
+import React, { useState } from 'react';
+
+type CombinedInputProps = {
+  options: string[]; // List of options for the dropdown
+  onChange: (value: string) => void; // Callback when the value changes
+};
+
+const CombinedInput: React.FC<CombinedInputProps> = ({ options, onChange }) => {
+  const [inputValue, setInputValue] = useState<string>(''); // State for the input value
+  const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false); // State to manage dropdown visibility
+  const [filteredOptions, setFilteredOptions] = useState<string[]>(options); // Filtered options based on input
+
+  // Handle input change
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setInputValue(value);
+    setFilteredOptions(options.filter(option => option.toLowerCase().includes(value.toLowerCase())));
+    setIsDropdownOpen(true); // Show dropdown when typing
+    onChange(value); // Pass the value to the parent component
+  };
+
+  // Handle option click
+  const handleOptionClick = (option: string) => {
+    setInputValue(option); // Set the clicked option as the input value
+    setIsDropdownOpen(false); // Close the dropdown
+    onChange(option); // Pass the selected value to the parent component
+  };
+
+  // Handle input focus to show dropdown
+  const handleInputFocus = () => {
+    if (inputValue) {
+      setIsDropdownOpen(true);
+    }
+  };
+
+  // Handle input blur to hide dropdown
+  const handleInputBlur = () => {
+    setTimeout(() => setIsDropdownOpen(false), 100); // Delay to allow click on dropdown
+  };
+
+  return (
+    <div style={{ position: 'relative', width: '200px' }}>
+      <input
+        type="text"
+        value={inputValue}
+        onChange={handleInputChange}
+        onFocus={handleInputFocus}
+        onBlur={handleInputBlur}
+        placeholder="Type or select an option"
+        style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+      />
+      {isDropdownOpen && filteredOptions.length > 0 && (
+        <ul
+          style={{
+            position: 'absolute',
+            top: '100%',
+            left: 0,
+            width: '100%',
+            margin: 0,
+            padding: '8px 0',
+            listStyle: 'none',
+            border: '1px solid #ccc',
+            backgroundColor: 'white',
+            zIndex: 10,
+            maxHeight: '150px',
+            overflowY: 'auto',
+            boxSizing: 'border-box',
+          }}
+        >
+          {filteredOptions.map((option, index) => (
+            <li
+              key={index}
+              onClick={() => handleOptionClick(option)}
+              style={{
+                padding: '8px 12px',
+                cursor: 'pointer',
+                backgroundColor: 'white',
+                borderBottom: '1px solid #ddd',
+              }}
+            >
+              {option}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+};
+
+export default CombinedInput;
+
+
+import React, { useState } from 'react';
+import CombinedInput from './CombinedInput';
+
+const App: React.FC = () => {
+  const [value, setValue] = useState<string>('');
+  const options = ['Apple', 'Banana', 'Orange', 'Mango', 'Pineapple'];
+
+  const handleChange = (newValue: string) => {
+    setValue(newValue);
+    console.log('Selected or typed value:', newValue);
+  };
+
+  return (
+    <div>
+      <h1>Combined Input and Select</h1>
+      <CombinedInput options={options} onChange={handleChange} />
+      <p>Current Value: {value}</p>
+    </div>
+  );
+};
+
+export default App;
+
+
